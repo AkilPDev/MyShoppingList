@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButtonDefaults.Icon
@@ -35,7 +36,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.shoppingapp.screen.ShoppingItem
 import com.example.shoppingapp.screen.shoppingEditItem
 
@@ -51,6 +57,13 @@ fun deleteItem(item: shoppingItem, exitItem: shoppingItem) {
 
 }
 
+@Preview
+@Composable
+fun shopingItem(){
+    ShoppingListApp()
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingListApp() {
     var sItems by remember { mutableStateOf(listOf<shoppingItem>()) }
@@ -61,68 +74,81 @@ fun ShoppingListApp() {
     var itemQuantity by remember { mutableStateOf("") }
     var itemTotalItem by remember { mutableStateOf(0) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(36.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Button(onClick = { showDialog = true }) {
-            Text(text = "Add Item")
-        }
-        LazyColumn(
+    Scaffold(topBar = {
+        TopAppBar(title = { Text(text = "Enjoy Shopping")},
+            colors = topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                titleContentColor = Color.Blue,
+            ),)
+    }, bottomBar = {},
+        floatingActionButton = {}) {
+            innerPadding ->
+
+        Column(
             modifier = Modifier
-                .weight(1f)
+                .fillMaxSize()
+                .padding(innerPadding),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(sItems) {
+            Button(onClick = { showDialog = true }) {
+                Text(text = "Add Item")
+            }
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                items(sItems) {
 
-                    item->
-                if(item.isEditiing){
-                    shoppingEditItem(item = item, onEditCompleted =
-                    {editedName, editedQuantity ->
-                        sItems = sItems.map {
-                            it.copy(
-                                isEditiing = false
-                            )
-                        }
-                        val editItem = sItems.find { it.id == item.id }
-                        editItem?.let {
-                            it.name = editedName
-                            it.quantity = editedQuantity
-                        }
-                    })
+                        item ->
+                    if (item.isEditiing) {
+                        shoppingEditItem(item = item, onEditCompleted =
+                        { editedName, editedQuantity ->
+                            sItems = sItems.map {
+                                it.copy(
+                                    isEditiing = false
+                                )
+                            }
+                            val editItem = sItems.find { it.id == item.id }
+                            editItem?.let {
+                                it.name = editedName
+                                it.quantity = editedQuantity
+                            }
+                        })
 
 
-                }else{
-                    ShoppingItem(item = item,
-                        onEditClick = {
-                        sItems = sItems.map { it.copy(isEditiing = it.id == item.id) }
-                    }, onDeleteClick = {
+                    } else {
+                        ShoppingItem(item = item,
+                            onEditClick = {
+                                sItems = sItems.map { it.copy(isEditiing = it.id == item.id) }
+                            }, onDeleteClick = {
 //                        sItems = sItems - item
-                            sDeleteItems = item
-                        showDeleteDialog = true
+                                sDeleteItems = item
+                                showDeleteDialog = true
 
-                    })
+                            })
+                    }
                 }
             }
-        }
 
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
 
-            Text(text = "Total Item: ${sItems.size} Quanity: $itemTotalItem")
+                Text(text = "Total Item: ${sItems.size} Quanity: $itemTotalItem")
 
-            Button(onClick = {
-                itemTotalItem = sItems.sumOf { it.quantity }
-            }) {
-                Text(text = "Order")
+                Button(onClick = {
+                    itemTotalItem = sItems.sumOf { it.quantity }
+                }) {
+                    Text(text = "Order")
+                }
             }
-        }
 
+        }
     }
 
     if(showDeleteDialog){
@@ -158,7 +184,7 @@ fun ShoppingListApp() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(onClick = { /*TODO*/ }) {
+                Button(onClick = { showDialog = false }) {
                     Text(text = "Cancel")
                 }
                 Button(onClick = {
